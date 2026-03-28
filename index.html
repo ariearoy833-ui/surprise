@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Special Surprise...</title>
+    <style>
+        /* [আগের সব স্টাইল এখানে আছে, লগইন পেজের জন্য বাড়তি কিছু যোগ করা হয়েছে] */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Playfair+Display:ital,wght@1,600&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Poppins', sans-serif; background-color: #ffe6ea; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow-x: hidden; padding: 20px 0; }
+        .section-container { display: none; opacity: 0; transition: opacity 0.5s ease; width: 100%; max-width: 400px; padding: 20px; }
+        .active-section { display: flex; flex-direction: column; align-items: center; opacity: 1; }
+        .glass-card { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px); border-radius: 20px; padding: 30px; box-shadow: 0 10px 30px rgba(255, 105, 135, 0.2); border: 2px solid #fff; width: 100%; text-align: center; }
+        .input-group { text-align: left; margin-bottom: 15px; width: 100%; }
+        .input-group label { display: block; font-size: 13px; font-weight: 600; color: #f43f5e; margin-bottom: 5px; }
+        .input-group input { width: 100%; padding: 12px; border: 2px solid #ffe4e6; border-radius: 12px; outline: none; }
+        .btn-main { width: 100%; padding: 14px; background: linear-gradient(to right, #fb7185, #ec4899); color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; }
+        .loading { display: none; color: #f43f5e; font-size: 14px; margin-top: 10px; }
+        
+        /* Proposal CSS inherited from your previous code */
+        .btn-no { transition: left 0.3s ease, top 0.3s ease; position: relative; }
+        .btn-yes { background: #f43f5e; color: white; border: none; padding: 12px 30px; border-radius: 25px; cursor: pointer; }
+        .flower { position: fixed; top: -10%; font-size: 24px; pointer-events: none; animation: fall linear forwards; }
+        @keyframes fall { 0% { transform: translateY(-10vh); opacity: 1; } 100% { transform: translateY(110vh); opacity: 0; } }
+    </style>
+</head>
+<body>
+
+    <div id="page-0" class="section-container active-section">
+        <div class="glass-card">
+            <h1 style="font-size: 24px; color: #e11d48;">🔒 Private Access</h1>
+            <p style="font-size: 13px; margin-bottom: 20px;">Please enter your ID & Password to unlock.</p>
+            <div class="input-group">
+                <label>User ID:</label>
+                <input type="text" id="login-id" placeholder="Enter ID">
+            </div>
+            <div class="input-group">
+                <label>Password:</label>
+                <input type="text" id="login-pass" placeholder="Enter Password">
+            </div>
+            <button id="btn-login" class="btn-main">Unlock 🗝️</button>
+            <div id="login-msg" class="loading">Verifying...</div>
+        </div>
+    </div>
+
+    <div id="page-1" class="section-container">
+        <div class="glass-card">
+            <h1>Welcome!</h1>
+            <div class="input-group" style="margin-top: 20px;">
+                <label>Partner's Name:</label>
+                <input type="text" id="partner-name" placeholder="E.g., Diya">
+            </div>
+            <button id="btn-continue" class="btn-main">Continue ❤️</button>
+        </div>
+    </div>
+
+    <div id="page-2" class="section-container">
+        <div class="glass-card">
+            <h2 id="proposal-title">Dear Name,</h2>
+            <p id="proposal-question" style="margin: 20px 0;">Will you be mine?</p>
+            <div style="display: flex; gap: 15px; justify-content: center;">
+                <button id="btn-yes" class="btn-yes">Yes! 🥰</button>
+                <button id="btn-no" class="btn-no">No 🙈</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="page-3" class="section-container">
+        <div class="glass-card">
+            <h1>I knew it! 🎉</h1>
+            <p id="final-msg">Forever starts today. 💍</p>
+        </div>
+    </div>
+
+    <script>
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwj8wdZUEsCVQ-SDCF2YA8KLMIcRqr5ywWIThXT2KgWzEmEicvnNLUMB8pXbpY07qo10w/exec";
+
+        // Logic for Device Token (Device Lock)
+        if(!localStorage.getItem('device_token')) {
+            localStorage.setItem('device_token', 'TK-' + Math.random().toString(36).substr(2, 9));
+        }
+        const deviceToken = localStorage.getItem('device_token');
+
+        // Login Logic
+        document.getElementById('btn-login').addEventListener('click', async () => {
+            const id = document.getElementById('login-id').value;
+            const pass = document.getElementById('login-pass').value;
+            const msg = document.getElementById('login-msg');
+
+            if(!id || !pass) return alert("Please fill both!");
+
+            msg.style.display = 'block';
+            try {
+                const response = await fetch(`${WEB_APP_URL}?id=${id}&pass=${pass}&token=${deviceToken}`);
+                const data = await response.json();
+
+                if(data.status === "success") {
+                    switchPage('page-0', 'page-1');
+                } else {
+                    alert(data.message);
+                    msg.style.display = 'none';
+                }
+            } catch (err) {
+                alert("Connection error!");
+                msg.style.display = 'none';
+            }
+        });
+
+        // Navigation Logic
+        function switchPage(oldId, newId) {
+            document.getElementById(oldId).style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById(oldId).classList.remove('active-section');
+                const next = document.getElementById(newId);
+                next.classList.add('active-section');
+                setTimeout(() => next.style.opacity = '1', 50);
+            }, 500);
+        }
+
+        document.getElementById('btn-continue').addEventListener('click', () => {
+            const name = document.getElementById('partner-name').value || "Someone Special";
+            document.getElementById('proposal-title').innerText = "Dear " + name + ",";
+            switchPage('page-1', 'page-2');
+        });
+
+        document.getElementById('btn-yes').addEventListener('click', () => {
+            switchPage('page-2', 'page-3');
+            createFlowers();
+        });
+
+        // Runaway No Button
+        const btnNo = document.getElementById('btn-no');
+        const moveNo = () => {
+            const x = Math.random() * (window.innerWidth - 100);
+            const y = Math.random() * (window.innerHeight - 50);
+            btnNo.style.position = 'fixed';
+            btnNo.style.left = x + 'px';
+            btnNo.style.top = y + 'px';
+        };
+        btnNo.addEventListener('mouseover', moveNo);
+        btnNo.addEventListener('touchstart', (e) => { e.preventDefault(); moveNo(); });
+
+        function createFlowers() {
+            for(let i=0; i<30; i++) {
+                const f = document.createElement('div');
+                f.className = 'flower';
+                f.innerText = '🌸';
+                f.style.left = Math.random() * 100 + 'vw';
+                f.style.animationDuration = (Math.random()*3+2)+'s';
+                document.body.appendChild(f);
+            }
+        }
+    </script>
+</body>
+</html>
